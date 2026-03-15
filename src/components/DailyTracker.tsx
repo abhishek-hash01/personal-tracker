@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useProteinTracker } from '@/hooks/useProteinTracker';
-import { Send, Loader2, Plus, Info, X } from 'lucide-react';
+import { Send, Loader2, Plus, Info, X, Flame } from 'lucide-react';
 import { FoodEntry } from '@/lib/types';
+import { toast } from 'sonner';
 
 const MINI_LIBRARY = [
   { food: '4 eggs', protein: 24, calories: 280 },
@@ -15,7 +16,7 @@ const MINI_LIBRARY = [
 ];
 
 export function DailyTracker() {
-  const { todayLog, goal, todayProtein, remainingProtein, addFoodToToday, removeFoodFromToday, state } = useProteinTracker();
+  const { todayLog, goal, todayProtein, remainingProtein, addFoodToToday, removeFoodFromToday, state, currentStreak } = useProteinTracker();
   const [input, setInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -53,6 +54,8 @@ export function DailyTracker() {
             calories: item.calories || 0,
           });
         });
+        
+        toast.success(`Parsed and added ${data.items.length} item${data.items.length > 1 ? 's' : ''}!`);
       }
       
       setInput('');
@@ -72,9 +75,16 @@ export function DailyTracker() {
       
       {/* Progress Section */}
       <section className="bg-card rounded-2xl p-6 shadow-sm border border-border">
-        <div className="flex justify-between items-end mb-4">
+        <div className="flex justify-between items-start mb-4">
           <div>
-            <p className="text-sm text-muted-foreground font-medium mb-1">Daily Goal: {goal}g</p>
+            <div className="flex items-center gap-2 mb-1">
+              <p className="text-sm text-muted-foreground font-medium">Daily Goal: {goal}g</p>
+              {currentStreak > 0 && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 text-xs font-bold border border-orange-200 dark:border-orange-900">
+                  <Flame size={12} className="fill-orange-500" /> {currentStreak} Day Streak
+                </span>
+              )}
+            </div>
             <h2 className="text-3xl font-bold tracking-tight text-foreground">{todayProtein}g <span className="text-lg text-muted-foreground font-normal">consumed</span></h2>
           </div>
           <div className="text-right">
@@ -156,7 +166,10 @@ export function DailyTracker() {
                 <div className="flex items-center gap-4">
                   <span className="font-bold text-lg text-primary">{entry.protein}g</span>
                   <button
-                    onClick={() => removeFoodFromToday(entry.id)}
+                    onClick={() => {
+                        removeFoodFromToday(entry.id);
+                        toast.info(`Removed ${entry.food}`);
+                    }}
                     className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-full bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-all focus:outline-none focus:opacity-100"
                     title="Remove entry"
                   >

@@ -5,9 +5,10 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 import { useState, useRef } from 'react';
 import { AppState, DailyLog } from '@/lib/types';
 import { Save, Download, Upload } from 'lucide-react';
+import { toast } from 'sonner';
 
 export function HistoryGraph() {
-  const { state, goal, updateGoal, updateConstraints } = useProteinTracker();
+  const { state, goal, updateGoal, updateConstraints, weeklyAverage } = useProteinTracker();
   
   const [goalInput, setGoalInput] = useState(goal.toString());
   const [constraintsInput, setConstraintsInput] = useState(state?.dietary_constraints.join(', ') || '');
@@ -50,6 +51,7 @@ export function HistoryGraph() {
     const constraintsArray = constraintsInput.split(',').map(s => s.trim()).filter(Boolean);
     updateConstraints(constraintsArray);
     
+    toast.success('Settings saved successfully!');
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
   };
@@ -66,6 +68,7 @@ export function HistoryGraph() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    toast.success('Backup exported successfully');
   };
 
   const handleImportClick = () => {
@@ -89,14 +92,19 @@ export function HistoryGraph() {
         }
         
         localStorage.setItem('protein-tracker-state', JSON.stringify(parsed));
-        window.location.reload(); // Reload to hydrate new state seamlessly
+        toast.success('Data imported! Reloading...');
+        setTimeout(() => window.location.reload(), 1500);
         
       } catch (err) {
         console.error('Import failed', err);
         setImportError('Failed to import: Invalid JSON or corrupted file.');
+        toast.error('Import failed');
       }
     };
-    reader.onerror = () => setImportError('Failed to read file.');
+    reader.onerror = () => {
+      setImportError('Failed to read file.');
+      toast.error('Failed to read file');
+    }
     reader.readAsText(file);
     
     // Reset input
@@ -110,7 +118,13 @@ export function HistoryGraph() {
       
       {/* Chart Section */}
       <section>
-        <h2 className="text-2xl font-bold mb-6">Weekly Progress</h2>
+        <div className="flex justify-between items-end mb-6">
+          <h2 className="text-2xl font-bold">Weekly Progress</h2>
+          <div className="text-right">
+            <span className="text-xs text-muted-foreground uppercase tracking-wider font-bold">7-Day Avg</span>
+            <p className="text-lg font-bold text-primary">{weeklyAverage}g</p>
+          </div>
+        </div>
         <div className="h-64 w-full bg-card rounded-2xl p-4 border border-border">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>

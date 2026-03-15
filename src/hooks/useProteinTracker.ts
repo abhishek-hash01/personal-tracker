@@ -72,6 +72,38 @@ export function useProteinTracker() {
   const goal = state?.protein_goal || DEFAULT_GOAL;
   const remainingProtein = Math.max(0, goal - todayProtein);
 
+  // Derived Values for History (Streak & Average)
+  let currentStreak = 0;
+  let weeklyTotal = 0;
+  let weeklyDaysCount = 0;
+
+  if (state) {
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dayLog = state.history[dateStr];
+      const dailyProtein = dayLog ? dayLog.foods.reduce((sum, f) => sum + f.protein, 0) : 0;
+      
+      weeklyTotal += dailyProtein;
+      if (dayLog) weeklyDaysCount++;
+
+      // Streak calculation (stops if a day in the past is missed)
+      // We skip 'today' if they haven't hit the goal yet, but they still have a streak from yesterday.
+      if (i === 0 && dailyProtein < goal) {
+        // Did not hit goal today yet, streak depends on yesterday
+        continue;
+      }
+      if (dailyProtein >= goal) {
+        currentStreak++;
+      } else {
+        break; // Streak broken
+      }
+    }
+  }
+
+  const weeklyAverage = weeklyDaysCount > 0 ? Math.round(weeklyTotal / 7) : 0;
+
   // Actions
   const addFoodToToday = useCallback((food: Omit<FoodEntry, 'id'>) => {
     setState((prev) => {
@@ -135,6 +167,8 @@ export function useProteinTracker() {
     todayCalories,
     remainingProtein,
     goal,
+    currentStreak,
+    weeklyAverage,
     addFoodToToday,
     removeFoodFromToday,
     updateGoal,

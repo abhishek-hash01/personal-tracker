@@ -3,6 +3,7 @@
 import { useProteinTracker } from '@/hooks/useProteinTracker';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 const MINI_LIBRARY = [
   { food: '4 eggs', protein: 24, calories: 280 },
@@ -26,6 +27,7 @@ export function SuggestionsLibrary() {
       calories: item.calories,
     });
     setJustAdded(item.food);
+    toast.success(`Logged ${item.food}`);
     setTimeout(() => setJustAdded(null), 1500);
   };
 

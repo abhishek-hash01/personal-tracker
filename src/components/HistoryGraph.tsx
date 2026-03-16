@@ -32,7 +32,7 @@ export function HistoryGraph() {
       data.push({
         name: shortDate,
         date: dateStr,
-        protein: protein,
+        protein: Number(protein.toFixed(1)),
         goal: state?.protein_goal || 100
       });
     }

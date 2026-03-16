@@ -67,10 +67,12 @@ export function useProteinTracker() {
   const today = getTodayDateString();
   const todayLog: DailyLog = state?.history[today] || { date: today, foods: [] };
   
-  const todayProtein = todayLog.foods.reduce((sum: number, item: FoodEntry) => sum + item.protein, 0);
-  const todayCalories = todayLog.foods.reduce((sum: number, item: FoodEntry) => sum + item.calories, 0);
+  const rawTodayProtein = todayLog.foods.reduce((sum: number, item: FoodEntry) => sum + item.protein, 0);
+  const todayProtein = Number(rawTodayProtein.toFixed(1));
+  const rawTodayCalories = todayLog.foods.reduce((sum: number, item: FoodEntry) => sum + item.calories, 0);
+  const todayCalories = Math.round(rawTodayCalories);
   const goal = state?.protein_goal || DEFAULT_GOAL;
-  const remainingProtein = Math.max(0, goal - todayProtein);
+  const remainingProtein = Math.max(0, Number((goal - todayProtein).toFixed(1)));
 
   // Derived Values for History (Streak & Average)
   let currentStreak = 0;

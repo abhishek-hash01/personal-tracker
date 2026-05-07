@@ -53,12 +53,11 @@ Example: "5 roti" -> {"food": "roti", "quantity": "x5", "protein": 15, "calories
         { role: 'system', content: systemPrompt },
         { role: 'user', content: text },
       ],
-      model: 'openai/gpt-oss-120b',
+      model: 'llama-3.3-70b-versatile',
       temperature: 1,
-      max_completion_tokens: 8192,
+      max_tokens: 1024,
       top_p: 1,
       stream: true,
-      reasoning_effort: 'medium',
       stop: null,
     });
 
